@@ -1,4 +1,4 @@
-import System.Exit           (exitSuccess, exitFailure)
+import System.Exit (exitSuccess, exitFailure)
 
 import Data.List
 import Data.Function
@@ -8,7 +8,7 @@ import System.Random
 
 main :: IO ()
 main = do
-    let srcPath = "american.png"
+    let srcPath = "mona.png"
     eitherImg <- readImage srcPath
     case eitherImg of
         Left errorMsg -> do
@@ -21,7 +21,7 @@ main = do
             let imgH = imgHeight standard;
 
             let randomGen = (mkStdGen 3)
-            let numSeeds = 400
+            let numSeeds = 500
             let seeds = zip (take numSeeds $ randomRs (0, imgW-1) randomGen) (take numSeeds $ randomRs (0, imgH-1) randomGen)
             putStrLn "Generating Image..."
             -- savePngImage "meme.png" (ImageRGB8 standard)
@@ -46,6 +46,16 @@ pointsSurrounding radius x y maxX maxY = [(x + fst(a), y + snd(a)) | a <- offset
 pixelsSurrounding image radius x y maxX maxY = 
     [pixelAt image (fst point) (snd point) | point <- pointsSurrounding radius x y maxX maxY]
 
+averagePixel :: [PixelRGB8] -> PixelRGB8
+averagePixel pixels = PixelRGB8
+            (fromIntegral r)
+            (fromIntegral g)
+            (fromIntegral b)
+            where
+                r = (sum [getPixelR pixel | pixel <- pixels])
+                g = (sum [getPixelG pixel | pixel <- pixels])
+                b = (sum [getPixelB pixel | pixel <- pixels])
+
     
 
 
@@ -57,7 +67,8 @@ renderAlgorithm original seeds x y = PixelRGB8
             where 
                 best = closestSeed (x,y) seeds
                 dist = distSquared best (x, y)
-                pixel = pixelAt original (fst best) (snd best)
+                -- pixel = pixelAt original (fst best) (snd best)
+                pixel = averagePixel (pixelsSurrounding original 0 (fst best) (snd best) (imgWidth original) (imgHeight original))
 
 
 distSquared (x1, y1) (x2, y2) = (x1-x2)^2 + (y1-y2)^2
